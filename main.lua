@@ -71,56 +71,6 @@ local function scrollListener( event )
 	return true
 end
 
-local function handleAboutUsButtonEvent( event )
-	local phase = event.phase
-	if "ended" == phase then
-		local fileHandle, errorString = io.open( "usr/about_us_2.txt", "r" )
-		local contents = ""
-		if fileHandle then
-			-- read all contents of file into a string
-			contents = fileHandle:read( "*a" )
-		else
-			print( "Reason open failed: " .. errorString )
-				fileHandle = io.open( path, "w" )
-				if fileHandle then
-			        print( "Created file" )
-				else
-			        print( "Create file failed!" )
-				end
-				fileHandle:write( "No About section exists")
-		end
-
-		local textOptions = 
-		{
-			text = contents,
-			x = display.contentCenterX,
-			y = 100,
-			width = display.actualContentWidth,
-			height = 0,
-			font = native.systemFontBold,
-			fontSize = 12,
-			align = "left",
-		}
-		local aboutUsText = display.newText(textOptions)
-		aboutUsText:setTextColor( 0 )
-		local aboutUs = widget.newScrollView({
-			left = 0,
-			top = 0,
-			width = display.contentHeight,
-			height = display.contentHeight,
-			scrollHeight = 30,
-			topPadding = 50,
-			bottomPadding = 50,
-			leftPadding = 50,
-			rightPadding = 50,
-			horizontalScrollDisabled = true,
-			verticalScrollDisabled = false,
-			listener = scrollListener
-		})
-		aboutUs:insert(aboutUsText)
-	end
-end
-
 local function defaultListener( event )
 	local webView = native.newWebView( display.contentCenterX, display.contentCenterY, display.contentWidth, display.contentHeight )
 	webView:request( "html" .. const.FILE_SEPARATOR .. "sampleFile.html" )
