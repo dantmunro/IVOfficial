@@ -93,7 +93,7 @@ local buttonDefaults = {
 	defaultImage = getLocalImage("button"),
 	emboss = true,
 	font = "Roboto",
-	labelAlign = "center"
+	labelAlign = "left"
 }
 
 --listeners
@@ -126,7 +126,6 @@ local background = display.getDefault( "background" )
 local icon = display.newImage( getLocalImage("logo_full"), display.contentCenterX, const.ICON.Y )
 icon:scale( const.ICON.SCALE_FACTOR, const.ICON.SCALE_FACTOR )
 local aboutBtn = initButton("About Us")
-aboutBtn.labelAlign = "left"
 aboutBtn:addEventListener( "tap", aboutUsListener )
 aboutBtn:addEventListener( "touch", aboutUsListener )
 aboutBtn:addEventListener( "mouse", aboutUsListener )
