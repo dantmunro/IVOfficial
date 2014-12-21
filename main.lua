@@ -8,6 +8,7 @@
 local widget = require("widget")
 local constants = require ("lib.init")
 local colors = require("lib.colors")
+local native = require("native")
 
 --constants
 const.RGB_TO_VECTOR_SCALE = 255
@@ -56,6 +57,11 @@ const.STRIP = {
 	WIDTH = .03*display.contentWidth,
 	HORIZ_MARGIN = 30
 }
+const.EMBEDDED = {
+	WIDTH = .03*display.contentWidth,
+	HEIGHT = .03*display.contentHeight,
+	X_OFFSET = .03*display.contentWidth
+}
 
 --"inline" functions
 local function getLocalImage(name)
@@ -70,33 +76,11 @@ local function rgbToVector(rgb)
 	return vector
 end
 
---listeners
-local function scrollListener( event )
-	local phase = event.phase
-	local direction = event.direction
-
-	if event.limitReached then
-		if "up" == direction then
-			print("Reached Top Limit")
-		elseif "down" == direction then
-			print("Reached Bottom Limit")
-		end
-	end
-
-	return true
-end
-
-local function defaultListener( event )
-	local webView = native.newWebView( display.contentCenterX, display.contentCenterY, display.contentWidth, display.contentHeight )
-	webView:request( "html" .. const.FILE_SEPARATOR .. "sampleFile.html" )
-end
-
 --"global" variables
 local buttons = {}
 local strips = {}
 local buttonDefaults = {
 	label = "",
-	onEvent = defaultListener,
 	emboss = false,
 	shape = "roundedRect",
 	width = const.BTN.WIDTH,
@@ -108,8 +92,17 @@ local buttonDefaults = {
 	labelColor = { default = rgbToVector(const.IVISUALS_COLORS.GREEN_DEFAULT), over = rgbToVector(const.IVISUALS_COLORS.GREEN_OVER)},
 	defaultImage = getLocalImage("button"),
 	emboss = true,
-	font = "Roboto"
+	font = "Roboto",
+	labelAlign = "center"
 }
+
+--listeners
+local function aboutUsListener(event)
+	if event.phase == "began" then
+		print("You touched the object")
+		return true
+	end
+end
 
 --functions
 local function initButton(label)
@@ -123,7 +116,6 @@ local function initButton(label)
 	return btn
 end
 
-
 --script
 display.setDefault( "background", 
 	colors.white[const.RGB_INDICES.RED], 
@@ -134,6 +126,14 @@ local background = display.getDefault( "background" )
 local icon = display.newImage( getLocalImage("logo_full"), display.contentCenterX, const.ICON.Y )
 icon:scale( const.ICON.SCALE_FACTOR, const.ICON.SCALE_FACTOR )
 local aboutBtn = initButton("About Us")
+aboutBtn.labelAlign = "left"
+aboutBtn:addEventListener( "tap", aboutUsListener )
+aboutBtn:addEventListener( "touch", aboutUsListener )
+aboutBtn:addEventListener( "mouse", aboutUsListener )
+
+local aboutUsVid = native.newWebView( aboutBtn.x + const.EMBEDDED.X_OFFSET, aboutBtn.y, const.EMBEDDED.WIDTH, const.EMBEDDED.HEIGHT )
+aboutUsVid:request( "https://www.youtube.com/watch?v=dQw4w9WgXcQ" )
+
 local contactInfoText = "Phone: (800) 688-2076    Email: sales@ivisuals.com"
 local contactInfo = display.newText( contactInfoText, const.CONTACT_INFO.X, const.CONTACT_INFO.Y,
 	"Roboto", const.CONTACT_INFO.FONT_SIZE )
@@ -142,6 +142,7 @@ contactInfo:setTextColor( contactInfoColor[const.RGB_INDICES.RED],
 	contactInfoColor[const.RGB_INDICES.GREEN], 
 	contactInfoColor[const.RGB_INDICES.BLUE]
 )
+
 local leftStrip = display.newRect( const.STRIP.HORIZ_MARGIN, 0, const.STRIP.WIDTH, 2*display.contentHeight )
 local rightStrip = display.newRect( display.contentWidth - const.STRIP.HORIZ_MARGIN, 
 	0, const.STRIP.WIDTH, 2*display.contentHeight )
