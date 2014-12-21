@@ -21,7 +21,7 @@ application =
 	notification =
 	{
 		iphone =
-		{
+		
 			types =
 			{
 				"badge", "sound", "alert", "newsstand"
@@ -30,3 +30,20 @@ application =
 	},
 	--]]    
 }
+--[[
+settings = {
+
+    iphone =
+    {
+        plist =
+        {
+            UIAppFonts =
+            {
+                "PTF55F.ttf",
+                "SourceCodePro-Black.ttf",
+                "AvenirLTStd-Black.otf"
+            },
+        },
+    },
+}
+]]--
