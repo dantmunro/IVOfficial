@@ -4,13 +4,13 @@
 -- FIXME Add id's to everything
 -----------------------------------------------------------------------------------------
 
---imports
+--IMPORTS
 local widget = require("widget")
 local constants = require ("lib.init")
 local colors = require("lib.colors")
 local native = require("native")
 
---constants
+--CONSTANTS
 const.RGB_TO_VECTOR_SCALE = 255
 const.IMAGE_DIR = "img"
 const.LIB_DIR = "lib"
@@ -50,20 +50,19 @@ const.CONTACT_INFO = {
 	FONT_SIZE = 9
 }
 const.ICON = {
-	Y = .15*display.contentHeight,
+	Y = .1*display.contentHeight,
 	SCALE_FACTOR = .3
 }
 const.STRIP = {
-	WIDTH = .03*display.contentWidth,
+	WIDTH = .07*display.actualContentWidth,
 	HORIZ_MARGIN = 30
 }
 const.EMBEDDED = {
-	WIDTH = .03*display.contentWidth,
-	HEIGHT = .03*display.contentHeight,
-	X_OFFSET = .03*display.contentWidth
+	X_OFFSET = .3*const.BTN.WIDTH,
+	SCALE_FACTOR = .1
 }
 
---"inline" functions
+--"INLINE" FUNCTIONS
 local function getLocalImage(name)
 	return const.IMAGE_DIR .. const.FILE_SEPARATOR .. name .. const.IMAGE_EXT
 end
@@ -76,63 +75,83 @@ local function rgbToVector(rgb)
 	return vector
 end
 
---"global" variables
+--"GLOBAL" VARIABLES
 local buttons = {}
+local buttonsGroup = display.newGroup( )
 local strips = {}
 local buttonDefaults = {
-	label = "",
-	emboss = false,
 	shape = "roundedRect",
 	width = const.BTN.WIDTH,
 	height = const.BTN.HEIGHT,
 	cornerRadius = 2,
 	fillColor = {default = rgbToVector(const.IVISUALS_COLORS.BLUE_DEFAULT), over = rgbToVector(const.IVISUALS_COLORS.PURPLE_DEFAULT)},
-	strokeColor = {default = rgbToVector(const.IVISUALS_COLORS.ORANGE_DEFAULT), over = rgbToVector(const.IVISUALS_COLORS.ORANGE_OVER)},
-	strokeWidth = 4,
+	--strokeColor = {default = rgbToVector(const.IVISUALS_COLORS.ORANGE_DEFAULT), over = rgbToVector(const.IVISUALS_COLORS.ORANGE_OVER)},
+	--strokeWidth = 1,
 	labelColor = { default = rgbToVector(const.IVISUALS_COLORS.GREEN_DEFAULT), over = rgbToVector(const.IVISUALS_COLORS.GREEN_OVER)},
 	defaultImage = getLocalImage("button"),
-	emboss = true,
-	font = "Roboto",
-	labelAlign = "left"
 }
 
---listeners
+--LISTENERS
+local onComplete = function( event )
+   print( "video session ended" )
+end
 local function aboutUsListener(event)
 	if event.phase == "began" then
 		print("You touched the object")
+		media.playVideo( "https://acm.wustl.edu/cse232/lecture_videos/CSE%20232%20-%20Lecture%203.mp4", media.RemoteSource, true, listener )
 		return true
-	end
+	elseif event.errorCode then
+        native.showAlert( "Error!", event.errorMessage, { "OK" } )
+        return false
+    end
 end
 
---functions
+--FUNCTIONS
 local function initButton(label)
 	local btn = widget.newButton(buttonDefaults)
-	btn:setLabel( label )
 	table.insert( buttons, btn )
 	btn.x = display.contentCenterX
 	for i = 1, #buttons do
 		buttons[i].y = i* ((const.BTN.SPACE)/(#buttons + 1)) + const.BTN.UPPER_MARGIN - const.BTN.LOWER_MARGIN
+		local labelText = display.newText( label, btn.x - const.EMBEDDED.X_OFFSET, btn.y, "Roboto", 15 )
+		local labelTextColor = rgbToVector(const.IVISUALS_COLORS.GREEN)
+		labelText:setFillColor( labelTextColor[const.RGB_INDICES.RED], 
+			labelTextColor[const.RGB_INDICES.GREEN], 
+			labelTextColor[const.RGB_INDICES.BLUE] 
+		)
 	end
 	return btn
 end
 
---script
+--SCRIPT
+
+--create background
 display.setDefault( "background", 
 	colors.white[const.RGB_INDICES.RED], 
 	colors.white[const.RGB_INDICES.GREEN], 
 	colors.white[const.RGB_INDICES.BLUE]
 )
 local background = display.getDefault( "background" )
+
+--create header icon
 local icon = display.newImage( getLocalImage("logo_full"), display.contentCenterX, const.ICON.Y )
 icon:scale( const.ICON.SCALE_FACTOR, const.ICON.SCALE_FACTOR )
+
+--create "about us" button
 local aboutBtn = initButton("About Us")
 aboutBtn:addEventListener( "tap", aboutUsListener )
 aboutBtn:addEventListener( "touch", aboutUsListener )
 aboutBtn:addEventListener( "mouse", aboutUsListener )
+--aboutBtn.height = 3*aboutBtn.height
 
-local aboutUsVid = native.newWebView( aboutBtn.x + const.EMBEDDED.X_OFFSET, aboutBtn.y, const.EMBEDDED.WIDTH, const.EMBEDDED.HEIGHT )
-aboutUsVid:request( "https://www.youtube.com/watch?v=dQw4w9WgXcQ" )
+--"embed" video into "about us" button
+local embedStill = display.newImage( getLocalImage("Icon-Small"), aboutBtn.x + const.EMBEDDED.X_OFFSET, aboutBtn.y )
+embedStill:addEventListener( "tap", aboutUsListener )
+embedStill:addEventListener( "touch", aboutUsListener )
+embedStill:addEventListener( "mouse", aboutUsListener )
+--embedStill:scale( const.EMBEDDED.SCALE_FACTOR, const.EMBEDDED.SCALE_FACTOR )
 
+--create contact info at bottom of screen
 local contactInfoText = "Phone: (800) 688-2076    Email: sales@ivisuals.com"
 local contactInfo = display.newText( contactInfoText, const.CONTACT_INFO.X, const.CONTACT_INFO.Y,
 	"Roboto", const.CONTACT_INFO.FONT_SIZE )
@@ -142,6 +161,7 @@ contactInfo:setTextColor( contactInfoColor[const.RGB_INDICES.RED],
 	contactInfoColor[const.RGB_INDICES.BLUE]
 )
 
+--create strips along sides of app
 local leftStrip = display.newRect( const.STRIP.HORIZ_MARGIN, 0, const.STRIP.WIDTH, 2*display.contentHeight )
 local rightStrip = display.newRect( display.contentWidth - const.STRIP.HORIZ_MARGIN, 
 	0, const.STRIP.WIDTH, 2*display.contentHeight )
