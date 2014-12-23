@@ -53,7 +53,7 @@ const.CONTACT_INFO = {
 }
 const.ICON = {
 	Y = .125*display.contentHeight,
-	SCALE_FACTOR = .3
+	SCALE = .3
 }
 const.STRIP = {
 	WIDTH = .1*display.viewableContentWidth,
@@ -64,6 +64,7 @@ const.STRIP = {
 }
 const.EMBEDDED = {
 	X_OFFSET = .3*const.BTN.WIDTH,
+	SCALE = .025
 }
 const.MACROS = {
 	GET_LOCAL_IMAGE = function(name) 
@@ -101,7 +102,7 @@ local buttonDefaults = {
 		default = const.MACROS.RGB_TO_VECTOR(const.IVISUALS_COLORS.GREEN), 
 		over = const.MACROS.RGB_TO_VECTOR(const.IVISUALS_COLORS.GREEN)
 	},
-	defaultImage = const.MACROS.GET_LOCAL_IMAGE("button"),
+	labelAlign = "left"
 }
 
 --LISTENERS
@@ -132,7 +133,7 @@ local function addAllListeners(widget, listener)
 	widget:addEventListener("mouse", listener)
 end
 
-local function initButton(label)
+local function initButton(label, listener)
 	local btn = widget.newButton(buttonDefaults)
 	table.insert(buttons, btn)
 	btn.x = display.contentCenterX
@@ -148,6 +149,14 @@ local function initButton(label)
 			const.FONT, 
 			const.BTN.LABEL_TEXT_SIZE
 		)
+		local labelIcon = display.newImage( 
+			const.MACROS.GET_LOCAL_IMAGE("button"),
+			btn.x + const.EMBEDDED.X_OFFSET,
+			btn.y
+		)
+		labelIcon:scale(const.EMBEDDED.SCALE, const.EMBEDDED.SCALE)
+		addAllListeners(btn, listener)
+		addAllListeners(labelIcon, listener)
 		local labelTextColor = const.MACROS.RGB_TO_VECTOR(
 			const.IVISUALS_COLORS.GREEN
 		)
@@ -193,11 +202,10 @@ local icon = display.newImage(
 	display.contentCenterX, 
 	const.ICON.Y 
 )
-icon:scale(const.ICON.SCALE_FACTOR, const.ICON.SCALE_FACTOR)
+icon:scale(const.ICON.SCALE, const.ICON.SCALE)
 
 --create "about us" button
-local aboutBtn = initButton("About Us")
-addAllListeners(aboutBtn, aboutUsListener)
+local aboutBtn = initButton("About Us", aboutUsListener)
 
 --create contact info (phone, email, website)
 local phoneNoInfo = initContactInfo(
