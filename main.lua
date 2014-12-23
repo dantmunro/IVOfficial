@@ -47,17 +47,18 @@ const.BTN = {
 }
 const.CONTACT_INFO = {
 	Y = .975*display.contentHeight,
-	FONT_SIZE = 9,
+	FONT_SIZE = 8.5,
+	SPACING = .5*display.contentCenterX,
 	PHONE_NO = "800-688-2076",
 	EMAIL = "sales@ivisuals.com",
 	WEB = "ivisuals.com"
 }
 const.ICON = {
-	Y = .1*display.contentHeight,
+	Y = .11*display.contentHeight,
 	SCALE_FACTOR = .3
 }
 const.STRIP = {
-	WIDTH = .07*display.actualContentWidth,
+	WIDTH = .1*display.viewableContentWidth,
 	HORIZ_MARGIN = 30
 }
 const.EMBEDDED = {
@@ -80,7 +81,6 @@ end
 
 --"GLOBAL" VARIABLES
 local buttons = {}
-local buttonsGroup = display.newGroup( )
 local strips = {}
 local contacts = {}
 local buttonDefaults = {
@@ -89,8 +89,8 @@ local buttonDefaults = {
 	height = const.BTN.HEIGHT,
 	cornerRadius = 2,
 	fillColor = {default = rgbToVector(const.IVISUALS_COLORS.BLUE_DEFAULT), over = rgbToVector(const.IVISUALS_COLORS.PURPLE_DEFAULT)},
-	--strokeColor = {default = rgbToVector(const.IVISUALS_COLORS.ORANGE_DEFAULT), over = rgbToVector(const.IVISUALS_COLORS.ORANGE_OVER)},
-	--strokeWidth = 1,
+	strokeColor = {default = rgbToVector(const.IVISUALS_COLORS.ORANGE_DEFAULT), over = rgbToVector(const.IVISUALS_COLORS.ORANGE_OVER)},
+	strokeWidth = 4,
 	labelColor = { default = rgbToVector(const.IVISUALS_COLORS.GREEN_DEFAULT), over = rgbToVector(const.IVISUALS_COLORS.GREEN_OVER)},
 	defaultImage = getLocalImage("button"),
 }
@@ -111,6 +111,12 @@ local function aboutUsListener(event)
 end
 
 --FUNCTIONS
+local function addAllListeners(widget, listener)
+	widget:addEventListener( "tap", listener )
+	widget:addEventListener( "touch", listener )
+	widget:addEventListener( "mouse", listener )
+end
+
 local function initButton(label)
 	local btn = widget.newButton(buttonDefaults)
 	table.insert( buttons, btn )
@@ -127,15 +133,12 @@ local function initButton(label)
 	return btn
 end
 
-local function initContactInfo(label)
-	local contactInfo = display.newText( phoneNoText, display.contentCenterX, const.CONTACT_INFO.Y, "Roboto", const.CONTACT_INFO.FONT_SIZE )
+local function initContactInfo(label, screenPrefix, sysPrefix)
+	local contactInfo = display.newText( screenPrefix .. label, 0, const.CONTACT_INFO.Y, "Roboto", const.CONTACT_INFO.FONT_SIZE )
 	table.insert( contacts, contactInfo )
+	local listener = function(event) if event.phase == "began" then system.openURL( sysPrefix .. label ) end end
+	addAllListeners(contactInfo, listener)
 	return contactInfo
-
-local function addAllListeners(widget, listener)
-	widget:addEventListener( "tap", listener )
-	widget:addEventListener( "touch", listener )
-	widget:addEventListener( "mouse", listener)
 end
 
 --SCRIPT
@@ -157,39 +160,9 @@ local aboutBtn = initButton("About Us")
 addAllListeners(aboutBtn, aboutUsListener)
 --aboutBtn.height = 3*aboutBtn.height
 
---"embed" video into "about us" button
---local embedStill = display.newImage( getLocalImage("Icon-Small"), aboutBtn.x + const.EMBEDDED.X_OFFSET, aboutBtn.y ) --FIXME regarded as nil
---addAllListeners(embedStill, aboutUsListener)
---embedStill:scale( const.EMBEDDED.SCALE_FACTOR, const.EMBEDDED.SCALE_FACTOR )
---[[
---create contact info at bottom of screen
-local contactInfoText = "Phone: 	Email: "
-local contactInfo = display.newText( contactInfoText, const.CONTACT_INFO.X, const.CONTACT_INFO.Y,
-	"Roboto", const.CONTACT_INFO.FONT_SIZE )
-
-contactInfo:setTextColor( contactInfoColor[const.RGB_INDICES.RED], 
-	contactInfoColor[const.RGB_INDICES.GREEN], 
-	contactInfoColor[const.RGB_INDICES.BLUE]
-)
-]]
---phone number
-local phoneNoText = "Phone: " .. string.gsub( const.CONTACT_INFO.PHONE_NO, "-", "." )
-local phoneNoInfo = display.newText( phoneNoText, .5*display.contentCenterX, const.CONTACT_INFO.Y, "Roboto", const.CONTACT_INFO.FONT_SIZE )
-table.insert( contacts, phoneNoInfo )
-local phoneNoListener = function(event) system.openURL("tel:" .. const.CONTACT_INFO.PHONE_NUMBER) end
-addAllListeners(phoneNoInfo, phoneNoListener)
-
-local emailText = "Email: " .. const.CONTACT_INFO.EMAIL
-local emailInfo = display.newText( emailText, display.contentCenterX, const.CONTACT_INFO.Y, "Roboto", const.CONTACT_INFO.FONT_SIZE )
-table.insert( contacts, emailInfo )
-local emailInfoListener = function(event) system.openURL( "mailto:" .. const.CONTACT_INFO.EMAIL ) end
-addAllListeners(emailInfo, emailInfoListener)
-
-local webText = "Web: " .. const.CONTACT_INFO.WEB
-local webInfo = display.newText( webText, 1.5*display.contentCenterX, const.CONTACT_INFO.Y, "Roboto", const.CONTACT_INFO.FONT_SIZE )
-table.insert( contacts, webInfo )
-local webInfoListener = function(event) system.openURL( "http://www." .. const.CONTACT_INFO.WEB ) end
-addAllListeners(webInfo, webInfoListener)
+local phoneNoInfo = initContactInfo(string.gsub( const.CONTACT_INFO.PHONE_NO, "-", "." ), "P: ", "tel:")
+local emailInfo = initContactInfo(const.CONTACT_INFO.EMAIL, "E: ", "mailto:")
+local webInfo  = initContactInfo(const.CONTACT_INFO.WEB, "W: ", "http://www.")
 
 local contactInfoColor = rgbToVector(const.IVISUALS_COLORS.PURPLE)
 for i = 1, #contacts do
@@ -197,13 +170,16 @@ for i = 1, #contacts do
 		contactInfoColor[const.RGB_INDICES.GREEN], 
 		contactInfoColor[const.RGB_INDICES.BLUE]
 	)
+	contacts[i].x = i*const.CONTACT_INFO.SPACING
 end
 
---create strips along sides of app
-local leftStrip = display.newRect( -display.viewableContentWidth, 0, const.STRIP.WIDTH, 2*display.contentHeight )
-local rightStrip = display.newRect( display.viewableContentWidth, 0, const.STRIP.WIDTH, 2*display.contentHeight )
+--create strips along sides and top of app
+local leftStrip = display.newRect( display.screenOriginX, 0, const.STRIP.WIDTH, 2*display.contentHeight )
+local rightStrip = display.newRect( display.viewableContentWidth + display.screenOriginX, 0, const.STRIP.WIDTH, 2*display.contentHeight )
+local topStrip = display.newRect(0, display.screenOriginY, 2*display.contentWidth, const.STRIP.WIDTH)
 table.insert( strips, leftStrip )
 table.insert( strips, rightStrip )
+table.insert( strips, topStrip )
 local stripColor = rgbToVector(const.IVISUALS_COLORS.BLUE)
 for i = 1,#strips do
 	strips[i]:setFillColor( 
