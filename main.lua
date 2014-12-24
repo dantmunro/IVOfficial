@@ -20,16 +20,16 @@ const.IMAGE_EXT = ".png"
 const.FILE_SEPARATOR = "/"
 const.FONT = "Roboto"
 const.IVISUALS_COLORS = {
-	ORANGE = {228, 54, 57},
-	GREEN = {130, 197, 118},
+	ORANGE = {228, 84, 57},
+	GREEN = {130, 190, 187},
 	BLUE = {109, 118, 155},
 	PURPLE = {55, 60, 140},
+	WHITE = {255, 255, 255}
 }
 const.RGB_INDICES = {
 	RED = 1,
 	GREEN = 2,
-	BLUE = 3,
-	ALPHA = 4
+	BLUE = 3
 }
 const.BTN = {
 	UPPER_MARGIN = .3*display.contentHeight,
@@ -41,7 +41,8 @@ const.BTN = {
 }
 const.ABOUT_US = {
 	VIDEO = "https://acm.wustl.edu/cse232/lecture_videos/"..
-		"CSE%20232%20-%20Lecture%203.mp4"
+		"CSE%20232%20-%20Lecture%203.mp4",
+	SCALE = .25
 }
 const.CONTACT_INFO = {
 	Y = .975*display.contentHeight,
@@ -71,15 +72,17 @@ const.MACROS = {
 		return const.IMAGE_DIR..const.FILE_SEPARATOR..name..const.IMAGE_EXT 
 	end,
 	RGB_TO_VECTOR = function(rgb) 
-		vector = {} 
-		for i = 1, 3 do 
-			vector[i] = rgb[i]/const.RGB_TO_VECTOR_SCALE 
-		end 
-		return vector 
+		return {
+			rgb[const.RGB_INDICES.RED]/const.RGB_TO_VECTOR_SCALE,
+			rgb[const.RGB_INDICES.GREEN]/const.RGB_TO_VECTOR_SCALE,
+			rgb[const.RGB_INDICES.BLUE]/const.RGB_TO_VECTOR_SCALE
+		}
 	end
 }
 
 --"GLOBAL" VARIABLES
+
+--lists
 local buttons = {}
 local strips = {}
 local contacts = {}
@@ -102,7 +105,8 @@ local buttonDefaults = {
 		default = const.MACROS.RGB_TO_VECTOR(const.IVISUALS_COLORS.GREEN), 
 		over = const.MACROS.RGB_TO_VECTOR(const.IVISUALS_COLORS.GREEN)
 	},
-	labelAlign = "left"
+	label = "",
+	labelAlign = "center"
 }
 
 --LISTENERS
@@ -134,38 +138,26 @@ local function addAllListeners(widget, listener)
 end
 
 local function initButton(label, listener)
-	local btn = widget.newButton(buttonDefaults)
-	table.insert(buttons, btn)
-	btn.x = display.contentCenterX
+	local btn = nil
+	if label == "About Us" then
+		btn = display.newImage(const.MACROS.GET_LOCAL_IMAGE("about_us_button"))
+		btn:scale(const.ABOUT_US.SCALE, const.ABOUT_US.SCALE)
+		btn.regular = false
+	else
+		btn = widget.newButton(buttonDefaults)
+		btn:setLabel( label )
+		btn.regular = true
+	end
 	btn.id = label
-	for i = 1, #buttons do
+	btn.listener = listener
+	table.insert( buttons, btn )
+	btn.x = display.contentCenterX
+	for i = 1,#buttons do
 		buttons[i].y = i* ((const.BTN.SPACE)/(#buttons + 1)) 
 		+ const.BTN.UPPER_MARGIN 
 		- const.BTN.LOWER_MARGIN
-		local labelText = display.newText(
-			label, 
-			btn.x - const.EMBEDDED.X_OFFSET, 
-			btn.y, 
-			const.FONT, 
-			const.BTN.LABEL_TEXT_SIZE
-		)
-		local labelIcon = display.newImage( 
-			const.MACROS.GET_LOCAL_IMAGE("button"),
-			btn.x + const.EMBEDDED.X_OFFSET,
-			btn.y
-		)
-		labelIcon:scale(const.EMBEDDED.SCALE, const.EMBEDDED.SCALE)
 		addAllListeners(btn, listener)
-		addAllListeners(labelIcon, listener)
-		local labelTextColor = const.MACROS.RGB_TO_VECTOR(
-			const.IVISUALS_COLORS.GREEN
-		)
-		labelText:setFillColor(labelTextColor[const.RGB_INDICES.RED], 
-			labelTextColor[const.RGB_INDICES.GREEN], 
-			labelTextColor[const.RGB_INDICES.BLUE] 
-		)
 	end
-	return btn
 end
 
 local function initContactInfo(label, screenPrefix, sysPrefix)
@@ -190,8 +182,8 @@ end
 
 --create background
 display.setDefault("background", 
-	colors.white[const.RGB_INDICES.RED], 
-	colors.white[const.RGB_INDICES.GREEN], 
+	colors.white[const.RGB_INDICES.RED],
+	colors.white[const.RGB_INDICES.GREEN],
 	colors.white[const.RGB_INDICES.BLUE]
 )
 local background = display.getDefault("background")
@@ -216,12 +208,19 @@ local phoneNoInfo = initContactInfo(
 local emailInfo = initContactInfo(const.CONTACT_INFO.EMAIL, "E: ", "mailto:")
 local webInfo  = initContactInfo(const.CONTACT_INFO.WEB, "W: ", "http://www.")
 
+--add IDs to all pieces created thus far
+icon.id = "icon"
+phoneNoInfo.id = "Phone Number"
+emailInfo.id = "Email"
+webInfo.id = "Web"
+
 --color contact info text and place it along bottom of screen
 local contactInfoColor = const.MACROS.RGB_TO_VECTOR(
 	const.IVISUALS_COLORS.PURPLE
 )
 for i = 1, #contacts do
-	contacts[i]:setTextColor(contactInfoColor[const.RGB_INDICES.RED], 
+	contacts[i]:setTextColor(
+		contactInfoColor[const.RGB_INDICES.RED], 
 		contactInfoColor[const.RGB_INDICES.GREEN], 
 		contactInfoColor[const.RGB_INDICES.BLUE]
 	)
@@ -247,6 +246,13 @@ local topStrip = display.newRect(
 	const.STRIP.WIDTH_TOP,
 	const.STRIP.HEIGHT_TOP
 )
+
+--add IDs to all strips
+leftStrip.id = "Left Strip"
+rightStrip.id = "Right Strip"
+topStrip.id = "Top Strip"
+
+--color all strips
 table.insert(strips, leftStrip)
 table.insert(strips, rightStrip)
 table.insert(strips, topStrip)
