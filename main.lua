@@ -40,8 +40,9 @@ const.BTN = {
 	LABEL_TEXT_SIZE = 15
 }
 const.ABOUT_US = {
-	VIDEO = "https://acm.wustl.edu/cse232/lecture_videos/"..
-		"CSE%20232%20-%20Lecture%203.mp4",
+	VIDEO = "https://www.dropbox.com/s/tu7ta40iavxgf8u/"..
+		"ivisuals%20Capabilities%202014%2016X9%20PPT%20timed%20latest%20v2"..
+		".mp4?dl=0",
 	SCALE = .25
 }
 const.CONTACT_INFO = {
