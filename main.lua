@@ -141,7 +141,7 @@ end
 
 local function initButton(label, listener)
 	local btn = nil
-	if label == "About Us" then
+	if label == "About Us" then --add special icon instead of button defaults
 		btn = display.newImage(const.MACROS.GET_LOCAL_IMAGE("about_us_button"))
 		btn:scale(const.ABOUT_US.SCALE, const.ABOUT_US.SCALE)
 		btn.regular = false
