@@ -16,8 +16,8 @@ settings = {
     {
         plist =
         {
-        	CFBundleDisplayName = "IVisuals",
-            CFBundleName = "IVisuals",
+        	CFBundleDisplayName = "ivisuals",
+            CFBundleName = "ivisuals",
             CFBundleIconFiles = {
             	"Icon.png",
                 "Icon@2x.png",
